@@ -11,5 +11,31 @@ spec:
           - image: artifacts.memez.de/stefftek/k8s-mongo-backup:1.1.0
             imagePullPolicy: IfNotPresent
             name: backup
+            schedule: 0 * * * *
+            env:
+            - name: MONGODB_URL
+              valueFrom:
+                secretKeyRef:
+                  key: MONGODB_URL
+                  name: k8s-backup-secret
+            - name: CF_ACCOUNT_ID
+              valueFrom:
+                secretKeyRef:
+                  key: CF_ACCOUNT_ID
+                  name: k8s-backup-secret
+            - name: CF_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  key: CF_ACCESS_KEY_ID
+                  name: k8s-backup-secret
+            - name: CF_ACCES_KEY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: CF_ACCES_KEY_SECRET
+                  name: k8s-backup-secret
+            - name: CF_BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: CF_BUCKET_NAME
+                  name: k8s-backup-secret
           restartPolicy: OnFailure
-  schedule: 0 * * * *
