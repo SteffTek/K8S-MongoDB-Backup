@@ -1,0 +1,99 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Pipeline
+
+on:
+  push:
+    branches:
+      - "main"
+
+env:
+  REGISTRY: artifacts.memez.de
+  IMAGE_NAME: stefftek/k8s-mongo-backup
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      # SETUP
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # INSTALL KUBECTL
+      - uses: azure/setup-kubectl@v3
+        id: install
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
+
+      # NODE JS
+      - name: Upgrade NPM
+        run: npm install -g npm
+
+      - run: node -v
+      - run: npm -v
+
+      - run: npm ci
+
+      # SETUP GIT
+      - name: Setup Git
+        run: git config --global user.name ${{ secrets.GH_USERNAME }} && git config --global user.email ${{ secrets.GH_EMAIL }}
+
+      - name: Change Version
+        uses: reedyuk/npm-version@1.1.1
+        with:
+          version: 'minor'
+          git-tag-version: 'true'
+
+      - name: Get current package version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@main
+
+      - name: Write Package Version
+        run: |
+          echo "PACKAGE_VERSION=${{ steps.package-version.outputs.current-version }}" >>${GITHUB_ENV}
+      # DOCKER
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: LowerCase Image Name
+        run: |
+          echo "IMAGE_NAME=${IMAGE_NAME,,}" >>${GITHUB_ENV}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PACKAGE_VERSION }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          labels: ${{ steps.meta.outputs.labels }}
+
+      # PATCH MANIFEST
+      - name: Patch Manifest
+        run: kubectl patch --local=true -f manifest/deployment.yaml -p '{"spec":{"jobTemplate":{"spec":{"template":{"spec":{"containers":[{"name":"backup","image":"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PACKAGE_VERSION }}"}]}}}}}}' -o yaml > temp.yaml
+      - run: mv temp.yaml manifest/deployment.yaml
+
+      - name: Push Manifest
+        run: git add . && git commit -m "Manifest Update"
+
+      # PUSH
+      - name: Push Changes
+        run: git push
