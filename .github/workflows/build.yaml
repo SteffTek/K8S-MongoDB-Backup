@@ -88,8 +88,8 @@ jobs:
 
       # PATCH MANIFEST
       - name: Patch Manifest
-        run: kubectl patch --local=true -f manifest/deployment.yaml -p '{"spec":{"jobTemplate":{"spec":{"template":{"spec":{"containers":[{"name":"backup","image":"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PACKAGE_VERSION }}"}]}}}}}}' -o yaml > temp.yaml
-      - run: mv temp.yaml manifest/deployment.yaml
+        run: kubectl patch --local=true -f manifest/cron.yaml -p '{"spec":{"jobTemplate":{"spec":{"template":{"spec":{"containers":[{"name":"backup","image":"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PACKAGE_VERSION }}"}]}}}}}}' -o yaml > temp.yaml
+      - run: mv temp.yaml manifest/cron.yaml
 
       - name: Push Manifest
         run: git add . && git commit -m "Manifest Update"
