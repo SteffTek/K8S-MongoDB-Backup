@@ -3,13 +3,13 @@ kind: CronJob
 metadata:
   name: mongo-backup
 spec:
-  schedule: "0 * * * *"
   jobTemplate:
     spec:
       template:
         spec:
           containers:
-          - name: backup
-            image: artifacts.memez.de/stefftek/k8s-mongo-backup
+          - image: artifacts.memez.de/stefftek/k8s-mongo-backup:1.1.0
             imagePullPolicy: IfNotPresent
+            name: backup
           restartPolicy: OnFailure
+  schedule: 0 * * * *
