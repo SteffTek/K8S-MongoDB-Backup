@@ -8,6 +8,8 @@ spec:
     spec:
       template:
         spec:
+          imagePullSecrets:
+          - name: regcred
           containers:
           - image: artifacts.memez.de/stefftek/k8s-mongo-backup:1.1.0
             imagePullPolicy: IfNotPresent
