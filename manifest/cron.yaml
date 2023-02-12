@@ -3,20 +3,13 @@ kind: CronJob
 metadata:
   name: mongo-backup
 spec:
-  schedule: 0 0 * * *
-  successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 0
   jobTemplate:
     spec:
       template:
         spec:
-          imagePullSecrets:
-          - name: regcred
           containers:
-          - image: artifacts.memez.de/stefftek/k8s-mongo-backup:1.1.0
-            imagePullPolicy: IfNotPresent
-            name: backup
-            env:
+          - env:
             - name: MONGODB_URL
               valueFrom:
                 secretKeyRef:
@@ -42,4 +35,11 @@ spec:
                 secretKeyRef:
                   key: CF_BUCKET_NAME
                   name: k8s-backup-secret
+            image: artifacts.memez.de/stefftek/k8s-mongo-backup:1.2.0
+            imagePullPolicy: IfNotPresent
+            name: backup
+          imagePullSecrets:
+          - name: regcred
           restartPolicy: OnFailure
+  schedule: 0 0 * * *
+  successfulJobsHistoryLimit: 0
