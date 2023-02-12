@@ -4,6 +4,8 @@ metadata:
   name: mongo-backup
 spec:
   schedule: 0 0 * * *
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 0
   jobTemplate:
     spec:
       template:
