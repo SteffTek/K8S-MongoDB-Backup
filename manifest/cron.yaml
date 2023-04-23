@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: mongo-backup
 spec:
-  failedJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 2
   jobTemplate:
     spec:
       template:
@@ -42,4 +42,4 @@ spec:
           - name: regcred
           restartPolicy: OnFailure
   schedule: 0 0 * * *
-  successfulJobsHistoryLimit: 0
+  successfulJobsHistoryLimit: 2
