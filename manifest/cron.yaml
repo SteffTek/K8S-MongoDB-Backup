@@ -35,7 +35,7 @@ spec:
                 secretKeyRef:
                   key: CF_BUCKET_NAME
                   name: k8s-backup-secret
-            image: artifacts.memez.de/stefftek/k8s-mongo-backup:1.2.0
+            image: artifacts.memez.de/stefftek/k8s-mongo-backup:1.2.2
             imagePullPolicy: IfNotPresent
             name: backup
           imagePullSecrets:
